@@ -131,7 +131,7 @@ class TransactionFactory(ModelFactory):
         ):
             __tablename__ = 'transaction'
             __versioning_manager__ = manager
-
+            
             id = sa.Column(
                 sa.types.BigInteger,
                 sa.schema.Sequence('transaction_id_seq'),
@@ -142,14 +142,17 @@ class TransactionFactory(ModelFactory):
             if self.remote_addr:
                 remote_addr = sa.Column(sa.String(50))
 
+
             if manager.user_cls:
                 user_cls = manager.user_cls
                 Base = manager.declarative_base
                 try:
-                    registry = Base.registry._class_registry
+                    if Base.__class__.__name__ == 'SQLModelMetaclass':
+                        registry = Base._sa_registry._class_registry
+                    else:
+                        registry = Base.registry._class_registry
                 except AttributeError:  # SQLAlchemy < 1.4
                     registry = Base._decl_class_registry
-
                 if isinstance(user_cls, six.string_types):
                     try:
                         user_cls = registry[user_cls]
@@ -169,6 +172,7 @@ class TransactionFactory(ModelFactory):
                 )
 
                 user = sa.orm.relationship(user_cls)
+
 
             def __repr__(self):
                 fields = ['id', 'issued_at', 'user']

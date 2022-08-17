@@ -7,8 +7,13 @@ class ModelFactory(object):
         in declarative model registry.
         """
         Base = manager.declarative_base
+
         try:
-            registry = Base.registry._class_registry
+            
+            if Base.__class__.__name__ == 'SQLModelMetaclass':
+                registry = Base._sa_registry._class_registry
+            else:
+                registry = Base.registry._class_registry
         except AttributeError:  # SQLAlchemy < 1.4
             registry = Base._decl_class_registry
         if self.model_name not in registry:
